@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id='main'>
+
+    </div>
+</body>
+
+<!-- lien vers la librairie jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    
+    $(function() {
+        test_get_all();
+        test_add({Id:0, Name:"Autre Google", Url:"https://www.google.ca", Category:"search"});
+        //test_delete(30);
+    });
+
+    function test_get_all(){
+        webAPI_GET_ALL("?sort=name", showData, showError);
+    }
+ 
+    function showData(bookmarks){
+        bookmarks.forEach(bookmark => {
+            $('#main').append("[" + bookmark.Id + "]", bookmark.Name + "<br>");
+            
+        });
+    }
+
+    function test_add(bookmark) {
+        webAPI_POST(bookmark, test_get_all, showError);
+    }
+
+    function showError(status){
+        console.log(status);
+    }
+
+    function test_delete(id){
+        webAPI_DELETE(id, test_get_all, showError);
+    }
+
+/*
+    Méthodes d'accès aux services Web API sManager
+*/
+
+const apiBaseURL= "http://localhost:5000/api/bookmarks";
+
+/// Normalement ces fonctions suivantes devraient êtres dans un fichier à part
+function webAPI_GET_ALL(queryString, successCallBack, errorCallBack) {
+    $.ajax({
+        url: apiBaseURL + queryString,
+        type: 'GET',
+        contentType:'text/plain',
+        data:{},
+        success: data => { successCallBack(data); console.log("webAPI_GET_ALL - success", data); },
+        error: function(jqXHR, textStatus, errorThrown) {
+            errorCallBack(errorThrown);
+            console.log("webAPI_GET_ALL - error");
+        }
+    });
+}
+
+function webAPI_GET( id, successCallBack, errorCallBack) {
+    $.ajax({
+        url: apiBaseURL + "/" + id,
+        type: 'GET',
+        contentType:'text/plain',
+        data:{},
+        success: data  => { successCallBack(data); console.log("webAPI_GET - success", data);},
+        error: function(jqXHR, textStatus, errorThrown) {
+            errorCallBack(errorThrown);
+            console.log("webAPI_GET - error");
+        }
+    });
+}
+
+function webAPI_POST( data , successCallBack, errorCallBack) {
+    $.ajax({
+        url: apiBaseURL,
+        type: 'POST',
+        contentType:'application/json',
+        data: JSON.stringify(data),
+        success: (data) => {successCallBack();  console.log("webAPI_POST - success", data); },
+        error: function(jqXHR, textStatus, errorThrown) {
+            errorCallBack(errorThrown);
+            console.log("webAPI_POST - error");
+        }
+    });
+}
+
+function webAPI_PUT(data, successCallBack, errorCallBack) {
+    $.ajax({
+        url: apiBaseURL + "/" + data.Id,
+        type: 'PUT',
+        contentType:'application/json',
+        data: JSON.stringify(data),
+        success:(s) => {successCallBack();  console.log("webAPI_PUT - success", s); },
+        error: function(jqXHR, textStatus, errorThrown) {
+            errorCallBack(errorThrown);
+            console.log("webAPI_PUT - error");
+        }
+    });
+}
+
+function webAPI_DELETE( id, successCallBack, errorCallBack) {
+    $.ajax({
+        url: apiBaseURL+"/" + id,
+        contentType:'text/plain',
+        type: 'DELETE',
+        success:() => {successCallBack();  console.log("webAPI_DELETE - success"); },
+        error: function(jqXHR, textStatus, errorThrown) {
+            errorCallBack(errorThrown);
+            console.log("webAPI_DELETE - error");
+        }
+    });
+}
+
+</script>
+</html>

@@ -1,0 +1,925 @@
+<!--------------------------------------------------------------------------------------------------
+    Single Page Application
+    photoS MANAGER WEB CLIENT
+
+    LAST UPDATE: 30 november 2020
+    Author : Nicolas Chourot
+    College Lionel-Groulx
+----------------------------------------------------------------------------------------------------->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta author="Nicolas Chourot">
+        <meta http-equiv="Content-Type" content="text/html; charset= ISO-8859-1">
+        <title>Gestionnaire de photos</title>
+
+        <!---STYLES BUNDLE -------------------------------------------------------------------------->
+        <link rel="stylesheet" href="css/jquery-ui.css">  
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <!-- Tooltips styles -->
+        <link rel="stylesheet" href="css/tooltip.css">
+
+        <!-- Confirm dialog styles -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+        <!-- Font awesome styles -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+         <!-- photo manager main layout styles -->
+         <link rel="stylesheet" href="css/photosManagerLayout.css">
+
+        <!-- favicon link: use https://favicon.io/favicon-converter/ to create new favicon -->
+        <link rel="icon" href="favicon.ico">
+
+        <!---Page backgroung image------------------------------------------------------------------>
+        <style>
+            body { 
+                background: url(images/bg.png) no-repeat center center fixed; 
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;
+                }
+        </style>
+    </head>   
+    <body>
+        <!---photoS MANAGER UI CONTAINER--------------------------------------------------------->
+        <div class="container">
+            <!---TITLE AND USER CONNECTION UI------------------------------------------------------->
+            <div class="title-container">
+                <h1><img src="images/favicon.png" style="height: 60px; margin-right:8px;float:left;">Gestionnaire de photos </h1>
+                <div style="margin-top:26px;text-align:right;">
+                    <div id="avatarContainer"></div>
+                    <h4 id="username">non connecté</h4>
+            </div>
+                <div style="margin-top:30px;text-align:right;">
+                    <div id="btn_OpenLoginForm" tooltip="Connexion"  tooltip-position="left">
+                        <span id="showSearchIcon" class="giconBig glyphicon glyphicon-log-in" >&nbsp;</span>
+                    </div>
+                    <div id="btn_OpenConfirmLogout" tooltip="Déconnexion"  tooltip-position="bottom">
+                        <span id="showSearchIcon" class="giconBig glyphicon glyphicon-log-out" >&nbsp;</span>
+                    </div>
+                    <div id="btn_OpenProfilDialog" tooltip="Enregistrement"  tooltip-position="left">
+                        <img src="images/register.png" id="showRegister" class="icon" >
+                    </div>
+                </div>
+            </div>
+                       
+            <div class="array-container">
+                 <!---photoS LIST HEAD----------------------------------------------------------->
+                <div class="header-container">
+                    <div class="header-photos-container columns-layout">
+                        <div id="sort_Title" class="sortcmd">Titre &nbsp;<span id="dir_Title"></span></div>
+                        <div id="sort_Created" class="sortcmd">Date de création &nbsp;<span id="dir_Created"></span></div>
+                        <div id="sort_Username" class="sortcmd">Usager &nbsp;<span id="dir_Username"></span></div>
+                        <div id="showSearch" tooltip="Barre de recherche"  tooltip-position="left">
+                            <span id="showSearchIcon" class="gicon glyphicon glyphicon-zoom-in" ></span>
+                        </div>
+                        <div id="btn_OpenAddphotoDialog" tooltip="Ajouter une photo" tooltip-position="left">
+                            <span class="gicon glyphicon glyphicon-plus"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!---SEARCH BAR--------------------------------------------------------------------->
+                <div class="searchBar columns-layout">
+                    <div><input type="search" placeholder="Titre..." id="search_title"></div>
+                    <div><input type="search" placeholder="Date..." id="search_created"></div>
+                    <div><input type="search" placeholder="Usager..." id="search_user"></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                
+                <!---photoS LIST----------------------------------------------------------------->
+                <div class="photo-list-scroll-containter">
+                    <div class="photo-list-container" id="photoList">
+                        <!-- La liste de photos sera injectée ici par du JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!---PHOTO DIALOG------------------------------------------------------------------------>
+        <div id="dialog-photoForm" title="photo" class="dialog">
+            <form id="photoForm" class="form-group">
+                    <input type="hidden" id="photoId" />
+                    <input type="hidden" id="photoUserId" />
+                    <input type="hidden" id="photoGUID" />
+                    <input type="hidden" id="photoCreated" />
+                    <input type="text" id="photoTitle" placeholder="Titre" class="form-control"/>
+                    <input type="text" id="photoDescription" placeholder="Description"  class="form-control"/>
+                    <table ><tr>
+                        <td style="padding:4px;"><label for="photoShared">Partagée</label></td>
+                        <td style="padding:4px;"><input type="checkbox" id="photoShared" name="photoShared"/></td>
+                    </tr></table>
+                    <div style="vertical-align:top; text-align: center ">
+                        <div class='imageDownloader' id = 'photo' defautImageSrc='images/No_image.png'></div>
+                        <label>(cliquez pour la changer l'image)</label>
+                    </div>
+            </form>
+        </div>
+       
+        <!---LOGIN DIALOG--------------------------------------------------------------------------->
+        <div id="dialog-loginForm" title="Connexion" class="dialog">
+            <form id="loginForm" class="form-group">
+                <input type="text" id="loginEmail" placeholder="Courriel"  class="form-control"/>
+                <input type="password" id="loginPassword" placeholder="Mot de passe" class="form-control"/>
+                <br>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="remember-me">
+                    <label class="form-check-label" for="remember-me">Se souvenir de moi</label>
+                    </div>
+            </form>
+        </div>
+
+        <!---PROFIL DIALOG-------------------------------------------------------------------------->
+        <div id="dialog-profilForm" title="Profil" class="dialog">
+            <form id="profilForm" class="form-group">
+                <input type="hidden" id="avatarGUID" />
+                <input type="hidden" id="profilId" />
+                <input type="text" id="profilUsername" placeholder="Nom d'usager"  class="form-control"/>
+                <input type="text" id="profilEmail" placeholder="Courriel"  class="form-control"/>
+                <input type="password" id="profilPassword" placeholder="Mot de passe"  class="form-control"/>
+                <br>
+                <input type="password" id="profilConfirmPassword" placeholder="Confirmation"  class="form-control"/>
+                <br>
+                <div style="vertical-align:top; text-align: center ">
+                    <div class='imageDownloader' id = 'avatar' defautImageSrc='images/No_Avatar.png'></div>
+                    <label>(cliquez pour la changer l'avatar)</label>
+                </div>
+            </form>
+        </div>
+
+        <!---SCRIPTS BUNDLE------------------------------------------------------------------------->
+        <script src="js/jquery-3.5.1.js"></script>
+        <script src="js/jquery-ui.js"></script>
+        <script src="js/Validation.js"></script>
+        <script src="js/WebAPIRequest.js"></script>
+        <script src="js/jquery-confirm.js"></script>
+        <script src="js/jquery.maskedinput.js"></script>
+        <script src="js/imageUploadUtilities.js"></script>
+
+        <!---photo MANAGER UI SCRIPT------------------------------------------------------------->
+        <script>
+            "use strict";
+
+            $(document).ready(initUI);
+
+            let editMode = false;
+            let addMode = false;
+            let newProfil = false;
+            let connected = false;
+            let queryString = "";
+            let search = "";
+            let searchShowed = false;
+            let sorted = [{field:"Username", desc:false}, {field:"Title", desc:false}];
+            let forceRefreshphotoList = false;
+            let currentETag = "";
+            let previousQueryString = ""; 
+            let photoValidationProvider = null;
+            let profilValidationProvider = null;
+            let pausephotosListPeriodicRefresh = false;
+
+            function initUI() {
+                initphotoValidation();
+                initProfilValidation();
+
+                initphotoDialog();
+                initLoginDialog();
+                initProfilDialog();              
+
+                $(".searchBar").hide();
+                $('#btn_OpenAddphotoDialog').click(OpenAddphotoDialog);
+                $("#btn_OpenLoginForm").click(OpenLoginForm);
+                $("#btn_OpenConfirmLogout").click(OpenConfirmLogout);
+                $("#btn_OpenProfilDialog").click(OpenProfilDialog);
+
+                $('#showSearch').click(toogleSearchVisibility);
+                
+                $("#sort_Title").click(updateSort);
+                $("#sort_Created").click(updateSort);
+                $("#sort_Username").click(updateSort);
+
+                $("input[type=search").on("input", updateHead);
+
+                insertWaitingStatus();
+                initphotosListColumnsLayout();
+                
+                updateHead();
+                updateUI(false);
+                installPeriodicphotosListRefresh();
+            }
+
+            function initphotosListColumnsLayout() {
+                createCssClass('.columns-layout',"display: grid; grid-template-columns: 30% 30% 30% 5% 5%;"); 
+            }
+            function initphotoDialog() {
+                $("#dialog-photoForm" ).dialog({ 
+                    autoOpen: false,  
+                    show: {effect: 'fade', duration: 400},
+                    hide: {effect: 'fade', duration: 400},
+                    buttons:[
+                        {
+                            id : 'btn-Savephoto',
+                            text : 'Soumettre',
+                            click : function() {
+                                    // Ajout d'un photo
+                                    if (addMode) {
+                                        let photo = makephotoFromphotoForm(false);
+                                        if (photoValidationProvider.isValid()) {
+                                            webAPI_POST(photo, ()=>{ getphotos(); $("#dialog-photoForm").dialog( "close" ); }, AlertError);
+                                        }
+                                    } else {
+                                        let photo = makephotoFromphotoForm(true);
+                                        if (photoValidationProvider.isValid()) {
+                                            webAPI_PUT(photo, ()=>{ getphotos(); $("#dialog-photoForm").dialog( "close" ); }, AlertError);
+                                        }
+                                    }
+                            }
+                        },
+                        {
+                            id : 'btn-Cancelphoto',
+                            text : 'Annuler',
+                            click : function(){
+                                        $(this).dialog('close');
+                                    }
+                        }
+                    ]
+                });
+                $('#dialog-photoForm').on('dialogopen', function(event) {
+                    pausephotosListPeriodicRefresh = true;
+                    $('#btn-Savephoto').addClass("btn btn-primary");
+                    $('#btn-Cancelphoto').addClass("btn btn-secondary");
+                    $('#photoTitle').val("");
+                    $('#photoDescription').val(""); // todo set UserId field
+                    clearImageData('photo');
+                    $("#photoShared").prop("checked",true);
+                    /// Tres important si on veut que la photo par defaut soit affichée dans le dialogue
+                    setImageDownloaderBlankImage('photo');
+                    $("#photoUserId").val(retrieveLoggedUser().Id);
+                    $("#btn_OpenAddphotoDialog").hide();
+                });
+                $('#dialog-photoForm').on('dialogclose', function(event) {
+                    addMode = false;
+                    editMode= false;
+                    pausephotosListPeriodicRefresh = false;
+                    resetphotoValidation();
+                    $("#btn_OpenAddphotoDialog").show();
+                });
+            }            
+            function OpenAddphotoDialog() {
+                addMode = true;
+                $('#dialog-photoForm').dialog('option', 'title', 'Ajout de photo');
+                $("#dialog-photoForm" ).dialog( 'open' );
+            }
+            function OpenEditphotoDialog(e){
+                editMode = true;
+                $('#dialog-photoForm').dialog('option', 'title', 'Modification de photo');
+                $("#dialog-photoForm").dialog( 'open' );
+                let photoId = e.currentTarget.id.split('_')[1];
+                webAPI_GET(photoId, fillEditphotoForm, AlertError);
+            }
+            function fillEditphotoForm(photo) {
+                $('#photoId').val(photo.Id); 
+                $('#photoUserId').val(photo.UserId);
+                $('#photoGUID').val(photo.GUID);
+                $('#photoTitle').val(photo.Title);
+                $('#photoCreated').val(photo.Created);
+                $('#photoDescription').val(photo.Description);
+                $("#photoShared").prop("checked", photo.Shared);
+                clearImageData('photo');
+                if (photo.OriginalURL != "")
+                /// Tres important si on veut que la photo soit affichée dans le dialogue
+                    setImageDownloaderImage('photo', photo.OriginalURL);
+                else
+                    setImageDownloaderBlankImage('photo');
+                //<div class='imageDownloader' id = 'photo' defautImageSrc='images/No_image.png'></div>
+            }
+            
+            function makephotoFromphotoForm(includeId = false) {
+                if (includeId) {
+                    // Récupération du Id du photo dans le contrôle caché
+                    return {Id: parseInt($('#photoId').val()), 
+                            Title: $('#photoTitle').val(), 
+                            Description: $('#photoDescription').val(), 
+                            Shared: $("#photoShared").prop("checked"),
+                            Created: $('#photoCreated').val(), 
+                            GUID: $('#photoGUID').val(),
+                            UserId: parseInt($('#photoUserId').val()),
+                            ImageData : getImageData('photo')
+                        };
+                }
+                return {    Id: 0, 
+                            Title: $('#photoTitle').val(), 
+                            Description: $('#photoDescription').val(), 
+                            Shared: $("#photoShared").prop("checked"),
+                            Created: $('#photoCreated').val(), 
+                            GUID: $('#photoGUID').val(),
+                            UserId: parseInt($('#photoUserId').val()),
+                            ImageData : getImageData('photo')
+                        };
+            }
+            function deletephoto(e) {
+                // Extraction du Id du photo inscrit dans l'attribut id de l'élément déclencheur de l'événement click
+                let photoId = parseInt(e.currentTarget.id.split('_')[1]);
+                webAPI_GET(photoId, confirmDeletephoto, AlertError);
+            }
+            function confirmDeletephoto(photo) {
+                $.confirm({
+                    title: 'Retrait de photos',
+                    content: '<b>' + photo.Title +'</b>?',
+                    buttons: {
+                        confirmer: function () {
+                            webAPI_DELETE(photo.Id, getphotos, AlertError);
+                        },
+                        annuler: {},
+                    }
+                });
+            }
+
+            function initProfilDialog() {
+                $("#dialog-profilForm" ).dialog(
+                    {   autoOpen: false,
+                        show: {effect: 'fade', speed: 400},
+                        hide: {effect: 'fade', speed: 400},
+                        buttons:[
+                            {
+                                id : 'btn-SaveProfil',
+                                text : 'Enregister',
+                                click : function() {
+                                    let profilFromForm = {  Id: parseInt($("#profilId").val()),
+                                                            Name: $("#profilUsername").val(),
+                                                            Email: $("#profilEmail").val(),
+                                                            Password: $("#profilPassword").val(),
+                                                            AvatarGUID: $("#avatarGUID").val(),
+                                                            ImageData : getImageData('avatar')
+                                                        }
+                                    if (connected)
+                                        webAPI_ChangeProfil(profilFromForm, ()=>{$("#dialog-profilForm").dialog( "close" ); updateUI(true);}, AlertError);
+                                    else {
+                                        profilFromForm.Id = 0;
+                                        webAPI_Register(profilFromForm, ()=>{$("#dialog-profilForm").dialog( "close" ); updateUI(true);}, AlertError);
+                                    }
+                                }
+                            },
+                            {
+                                id : 'btn-CancelProfil',
+                                text : 'Annuler',
+                                click : function(){
+                                            $(this).dialog('close');
+                                        }
+                            },
+                            {
+                                id : 'btn-deleteProfil',
+                                text : 'Désinscription',
+                                click : function (){
+                                    confirmDeleteAccount();
+                                }
+                            }
+                        ]
+                        });
+                $('#dialog-profilForm').on('dialogopen', function(event) {
+                    pausephotosListPeriodicRefresh = true;
+                    $("#profilId").val(0);
+                    $('#btn-SaveProfil').addClass("btn btn-primary");
+                    $('#btn-deleteProfil').addClass("btn btn-danger");
+                    $('#btn-CancelProfil').addClass("btn btn-secondary");
+                    if (connected) {
+                        $('#dialog-profilForm').dialog('option', 'title', 'Modification de votre profil...');
+                        $("#profilId").val(retrieveLoggedUser().Id);
+                        $('#profilUsername').val(retrieveLoggedUser().Name);
+                        $('#profilEmail').val(retrieveLoggedUser().Email);
+                        $('#avatarGUID').val(retrieveLoggedUser().AvatarGUID);
+                        if (retrieveLoggedUser().AvatarURL != "")
+                            setImageDownloaderImage('avatar', retrieveLoggedUser().AvatarURL);
+                        else
+                            setImageDownloaderBlankImage('avatar');
+                        $('#btn-deleteProfil').show();
+                    } else {
+                        $('#dialog-profilForm').dialog('option', 'title', 'Création de compte...');
+                        $('#profilUsername').val("");
+                        $('#profilEmail').val("");
+                        setImageDownloaderBlankImage('avatar');
+                        $('#btn-deleteProfil').hide();
+                    }
+                    $('#profilPassword').val("");
+                    $('#profilConfirmPassword').val("");
+                    $("#btn_OpenAddphotoDialog").hide();
+                });
+                $('#dialog-profilForm').on('dialogclose', function(event) {
+                    pausephotosListPeriodicRefresh = false;
+                    resetProfilValidation();
+                    if (connected)
+                        $("#btn_OpenAddphotoDialog").show();
+                });
+            }
+            function OpenProfilDialog() {
+                pausephotosListPeriodicRefresh = true;
+                $("#dialog-profilForm" ).dialog('open');
+            }
+            function confirmDeleteAccount() {
+                pausephotosListPeriodicRefresh = true;
+                $.confirm({
+                    title: 'Retrait de compte',
+                    content: '<b>Voulez-vous vraiment effacer votre compte <br>ainsi que toutes vos photos?</b>',
+                    buttons: {
+                        confirmer:  
+                            function () {
+                                if (connected) {
+                                    webAPI_DELETE_Account(retrieveLoggedUser().Id, 
+                                        function () {
+                                            closeAllDialog();
+                                            pausephotosListPeriodicRefresh = false;
+                                            forceLogout();
+                                        }, 
+                                        AlertError);
+                                }
+                            },
+                        annuler: {},
+                    }
+                });
+            }
+
+            function initLoginDialog() {
+                $("#dialog-loginForm" ).dialog(
+                    {   autoOpen: false,
+                        show: {effect: 'fade', speed: 400},
+                        hide: {effect: 'fade', speed: 400},
+                        buttons:[
+                        {
+                            id : 'btn-OkLogin',
+                            text : 'Ok',
+                            click : function() {
+                                pausephotosListPeriodicRefresh = false;
+                                webAPI_login($( "#loginEmail").val(), 
+                                                $("#loginPassword").val(), 
+                                                ()=>{
+                                                    $("#dialog-loginForm").dialog( "close" ); 
+                                                    updateUI(true);
+                                                }, 
+                                                failLogin);
+                            }
+                        },
+                        {
+                            id : 'btn-CancelLogin',
+                            text : 'Annuler',
+                            click : function(){
+                                        $(this).dialog('close');
+                                    }
+                        }
+                    ]
+                    });
+                $('#dialog-loginForm').on('dialogopen', function(event) {
+                    pausephotosListPeriodicRefresh = true;
+                    if (localStorage.getItem('rememberme') == "1") {
+                        $("#remember-me").attr("checked","checked");
+                        let email = localStorage.getItem('loginemail');
+                        let password = localStorage.getItem('loginpassword');
+                        if (email) $("#loginEmail").val(email);
+                        if (password) $("#loginPassword").val(password);
+                    } else {
+                        $("#loginEmail").val("");
+                        $("#loginPassword").val("");
+                    }
+                });
+                $('#dialog-loginForm').on('dialogclose', function(event) {
+                   pausephotosListPeriodicRefresh = false;
+                   if ($('#remember-me').is(":checked")) {
+                        localStorage.setItem('rememberme', "1");
+                        localStorage.setItem('loginemail', $("#loginEmail").val());
+                        localStorage.setItem('loginpassword', $("#loginPassword").val());
+                    } else {
+                        localStorage.setItem('rememberme', "0");
+                        localStorage.removeItem('loginemail');
+                        localStorage.removeItem('loginpassword');
+                    }    
+                });
+            }
+            function OpenConfirmLogout() {
+                $.confirm({
+                    title: 'Déconnection...',
+                    content: 'Voulez-vous vous déconnecter?',
+                    buttons: {
+                        confirmer: function () {
+                            pausephotosListPeriodicRefresh = false;
+                            webAPI_logout(retrieveLoggedUser().Id, updateUI, AlertError);
+                        },
+                        annuler: {},
+                    }
+                });
+            }
+            function OpenLoginForm() {
+                $('#btn-OkLogin').addClass("btn btn-primary");
+                $('#btn-CancelLogin').addClass("btn btn-secondary");
+                $("#dialog-loginForm" ).dialog( 'open' );
+            }
+            function setUsername(username) {
+                $("#username").html("<span id='link_OpenProfilDialog' style='color:blue;' tooltip='Modifier votre profil' class='clickable'>" + username + "</span>");
+                $("#link_OpenProfilDialog").click(OpenProfilDialog);
+            }
+            function unsetUsername() {
+                $("#username").html("<span style='color:gray'>non connecté</span>");
+            }
+            function failLogin() {
+                Alert("Connexion échouée");
+                connected = false;
+                unsetUsername();
+                updateUI(true);
+            }       
+            function updateConnected() {
+                connected = false;
+                let username="";
+                if (retrieveLoggedUser() != null) {
+                    username = retrieveLoggedUser().Name;
+                    connected = true;
+                }
+                if (connected) {
+                    setUsername(username);
+                    $("#avatarContainer").empty();
+                    $("#avatarContainer").append(html_fittedImage(retrieveLoggedUser().AvatarURL,'avatar'));
+                    $("#btn_OpenLoginForm").hide();
+                    $("#btn_OpenConfirmLogout").show();
+                    $("#btn_OpenAddphotoDialog").show();
+                    $('#btn_OpenProfilDialog').attr("tooltip", "Profil");
+                }
+                else {
+                    $("#avatarContainer").empty();
+                    unsetUsername();
+                    $("#btn_OpenLoginForm").show();
+                    $("#btn_OpenConfirmLogout").hide();
+                    $("#btn_OpenAddphotoDialog").hide();
+                    $('#btn_OpenProfilDialog').attr("tooltip", "Création de compte");
+                }
+            }
+            
+            function installPeriodicphotosListRefresh() {
+                setInterval(() => { if (!pausephotosListPeriodicRefresh) getphotos(); }, 15000);
+            }
+
+            function toogleSearchVisibility() {
+                if (searchShowed)
+                    hideSearch();
+                else
+                    showSearch();
+                searchShowed = ! searchShowed;
+            }
+            function hideSearch() {
+                $(".searchBar").hide({duration:400});
+                $("#showSearchIcon").removeClass("glyphicon glyphicon-zoom-out");
+                $("#showSearchIcon").addClass("glyphicon glyphicon-zoom-in");
+            }
+            function showSearch() {
+                $(".searchBar").show({duration:400});
+                $("#showSearchIcon").removeClass("glyphicon glyphicon-zoom-in");
+                $("#showSearchIcon").addClass("glyphicon glyphicon-zoom-out");
+            }
+            function updateSort(e){
+                let name = e.target.id.split('_')[1];
+                $("#dir_"+name).removeClass("glyphicon glyphicon-sort-by-attributes");
+                $("#dir_"+name).removeClass("glyphicon glyphicon-sort-by-attributes-alt");
+                let found = false;
+                for(let i=0; i < sorted.length; i++){
+                    if (sorted[i].field == name) {
+                        found = true;
+                        if (sorted[i].desc)
+                            sorted.splice(i,1);
+                        else    
+                            sorted[i].desc = true;
+                        break;
+                    }
+                }   
+                if (!found) 
+                    sorted.push({field:name, desc:false});
+                updateHead();
+            }
+            function addSearchKey(key, value) {
+                if (value != ""){
+                    if (search != "") search += "&";
+                    search += key + "=" + value + "*";
+                }
+            }
+            function updateSearch(){ 
+                search = "";
+                addSearchKey("title", $("#search_title").val());                
+                addSearchKey("created", $("#search_created").val());
+                addSearchKey("username", $("#search_user").val());
+                
+                if (search != "") {
+                    if (queryString != "")
+                        search = "&" + search;   
+                    else
+                        search = "?"+ search;
+                }
+                queryString += search;
+                updateUI(true);
+            }
+            function updateHead() {
+                queryString = "";
+                let first = true;
+                let sortIndex =0;
+                sorted.forEach(sort => {
+                    if (first) {
+                        first = false;
+                        queryString += '?';
+                    }
+                    else queryString += '&';
+                    queryString += "sort=" +sort.field.toLowerCase();
+                    // opacité en fonction du rang de la clé de tri
+                    $("#dir_"+sort.field).css("opacity", 1-sortIndex/3);
+                    if (sort.desc) {
+                        queryString += ',desc';
+                        $("#dir_"+sort.field).addClass('glyphicon glyphicon-sort-by-attributes-alt');
+                    } else
+                    $("#dir_"+sort.field).addClass('glyphicon glyphicon-sort-by-attributes');
+                    sortIndex ++;
+                });
+                updateSearch();
+            }
+            function updateUI(forceRefresh = true){
+                forceRefreshphotoList = forceRefresh;
+                updateConnected();
+                getphotos();
+                forceRefreshphotoList = false;
+            }
+            function getphotos() {
+                console.log(queryString);
+                if (forceRefreshphotoList){
+                    webAPI_HEAD(getETag, AlertError);
+                } else
+                    webAPI_HEAD(checkETag, AlertError);
+            }
+            function getETag(ETag){
+                currentETag = ETag;
+                webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                console.log("Forced Downloading photos");
+            }
+            function checkETag(ETag){
+                if (ETag != currentETag) {
+                    webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                    currentETag = ETag;
+                    console.log("new ETag Downloading photos");
+                } else {
+                   if (previousQueryString != queryString || forceRefreshphotoList){
+                        webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                        previousQueryString = queryString;
+                        console.log("new queryString Downloading photos");
+                    } else {
+                            console.log("photos list up to date");
+                    }
+                }
+            }
+  
+            function createCssClass(name, rules){
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                document.getElementsByTagName('head')[0].appendChild(style);
+                if(!(style.sheet||{}).insertRule) 
+                    (style.styleSheet || style.sheet).addRule(name, rules);
+                else
+                    style.sheet.insertRule(name+"{"+rules+"}",0);
+            }
+ 
+            function insertWaitingStatus(){
+                $('#photoList').empty()
+                $('#photoList').append(  makeCell("En attente de réponse du service Web...", "waiting"));
+                $('#photoList').append($('<img src="images/Loading_icon.gif" alt="waiting"/>'));
+            }
+            function statusToString(status) {
+                let text = "Le server ne répond pas.";
+                console.log(status)
+                switch (status){
+                    case 401: text = "<br>Requête non autorisée. <br>Vous devez être connecté."; break;
+                    case 409: text = "<br>Conflit de données. <br>Requête refusée."; break;
+                    case 422: text = "<br>Format des données soumises incorrect. <br>Requête refusée."; break;
+                }
+                return text;
+            }
+            function closeAllDialog() {
+                $(".dialog").dialog("close");
+            }
+            function forceLogout() {
+                Alert("Expiration de permission d'accès. Vous n'êtes plus connecté.");
+                closeAllDialog();
+                deConnect();
+                updateUI(true);
+            }
+            function Alert(message) {
+                $.confirm({
+                    title: message,
+                    content: '',
+                    buttons: {
+                        fermer: function () { }
+                    }
+                });
+            }
+            function AlertError(status) {
+                $.confirm({
+                    title: "Message provenant du server..." + status,
+                    content: '<img src="images/error.png" style="width:60px;margin:10px" alt="httpError"/>' + statusToString(status),
+                    buttons: {
+                        fermer: function () { 
+                            this.close();
+                            if (status == 401) {
+                                forceLogout();
+                            }
+                            pausephotosListPeriodicRefresh = true;
+                        }
+                    }
+                });
+            }
+
+            function initphotoValidation() {
+                photoValidationProvider = new ValidationProvider("photoForm");
+                photoValidationProvider.addControl("photoTitle", validate_photoTitle, false /*validateOnLeave*/);
+                photoValidationProvider.addControl("photoDescription", validate_photoDescription, false /*validateOnLeave*/);
+            }
+            function resetphotoValidation() {
+                photoValidationProvider.reset();
+            }
+            function validate_photoTitle(){
+                let TBX_Title = document.getElementById("photoTitle");
+                if (TBX_Title.value === "")
+                    return "Titre manquant";
+                return "";
+            }
+            function validate_photoDescription(){
+                let TBX_Description = document.getElementById("photoDescription");
+                if (TBX_Description.value === "")
+                    return "Description manquante";
+                return "";
+            }
+            function initProfilValidation() {
+                profilValidationProvider = null;
+                profilValidationProvider = new ValidationProvider("profilForm");
+                profilValidationProvider.addControl("profilUsername", validate_ProfilUsername, false /*validateOnLeave*/);
+                profilValidationProvider.addControl("profilEmail", validate_ProfilEmail, false /*validateOnLeave*/);
+                profilValidationProvider.addControl("profilPassword", validate_ProfilPassword, false /*validateOnLeave*/);
+                profilValidationProvider.addControl("profilConfirmPassword", validate_ProfilConfirmPassword, false /*validateOnLeave*/);
+            }
+            function resetProfilValidation() {
+                profilValidationProvider.reset();
+            }
+            function validate_ProfilUsername(){
+                let TBX_Username = document.getElementById("profilUsername");
+                if (TBX_Username.value === "")
+                    return "Nom d'usager manquant";
+                return "";
+            }
+            function validate_ProfilEmail(){
+                let TBX_Email = document.getElementById("profilEmail");
+                let EmailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if (TBX_Email.value === "")
+                    return "Courriel manquant";
+                if (!EmailRegex.test(TBX_Email.value))
+                    return "Courriel invalide";
+                return "";
+            }            
+            function validate_ProfilPassword(){
+                return "";
+            }
+            function validate_ProfilConfirmPassword(){
+                let TBX_Confirm = document.getElementById("profilConfirmPassword");
+                if (TBX_Confirm.value != "") {
+                    let TBX_Password = document.getElementById("profilPassword");
+                    if (TBX_Confirm.value != TBX_Password.value)
+                        return "Différent du mot de passe."
+                }
+                return "";
+            }
+
+            function cellOver(e){
+                if (!addMode && !editMode) {
+                    // currentTarget.className contient en principe : 'row_x cell ...'
+                    let photoId = e.currentTarget.className.split(' ')[0].split('_')[1];
+                    $('#edit_' + photoId).show();
+                    $('#delete_' + photoId).show();
+                    $('.row_'+photoId).addClass('selectedRow');
+                }
+            }
+            function cellBlur(e){
+                if (!editMode) {
+                    // currentTarget.className contient en principe : 'row_x cell ...'
+                    let photoId = e.currentTarget.className.split(' ')[0].split('_')[1];
+                    $('#edit_' + photoId).hide();
+                    $('#delete_' + photoId).hide();
+                    $('.row_'+photoId).removeClass('selectedRow');
+                }
+            }
+            function makeCell(content, cssClass){
+                return $('<div class= "' + cssClass + '">' + content + '</div>');
+            }
+            function makeButton(cssClass, id, tooltip) {
+                return $('<span id="' + id + '" class="'+ cssClass + '" style="margin-rigth:3px;"></span>');
+            }
+            function makeGlyphIcon(glyphIconId){
+                return $("<div class='gicon glyphicon glyphicon-" + glyphIconId + "'></div>");
+            }
+            function makeHyperLink(url, caption){
+                return '<a href="' + url +'"target="_blank">' + caption + '</a>';
+            }          
+            function makeFavicon(url) {
+                // Utiliser l'API de google pour extraire le favicon du site pointé par url
+                // retourne un élément div comportant le favicon en tant qu'image de fond
+                ///////////////////////////////////////////////////////////////////////////
+                if (url.slice(-1) != '/') url += '/';
+                url = "http://www.google.com/s2/favicons?sz=64&domain=" + url;
+                return '<div class="favicon" style="background-image: url(' + url + ');"></div>';
+            }
+            function html_fittedImage(url, css=''){
+                return " <div class='"+css+"' style='background:url("+url+") no-repeat center; background-size: cover; margin-right:5px;'></div>";
+            }
+            function thumbNail(photo, loggedUserId){
+       
+                let thumbnailContainer = $("<div class='thumbnailContainer'></div>");
+                let thumbnailHeader = $("<div class='thumbnailHeader ellipsis'></div>");
+                if (connected && photo.UserId == loggedUserId){
+                    // Bouton d'appel à la modification de la photo
+                    thumbnailHeader.append(makeButton("editphoto", "edit_" + photo.Id , "Modifier "+ photo.Title).append(makeGlyphIcon('pencil')));
+                    // Bouton d'appel au retrait de photo
+                    thumbnailHeader.append(makeButton("deletephoto", "delete_" + photo.Id , "Effacer "+ photo.Title).append(makeGlyphIcon('remove')));
+                } 
+
+                thumbnailHeader.append($("<br><span>" + photo.Title + "</span>"));
+                thumbnailHeader.append($("<br><span style='font-size:14px;color:green'>" + photo.Username + "</span>"));
+                thumbnailHeader.append($("<br><span style='font-size:14px;color:lightblue'>" + new Date(photo.Created * 1000) + "</span>"));
+                thumbnailContainer.append(thumbnailHeader);
+                thumbnailContainer.append(html_fittedImage(photo.ThumbnailURL, "thumbnail"));
+                return thumbnailContainer;
+            }
+
+            function updatephotoList(photos){
+                $('#photoList').empty();
+                let loggedUserId = (retrieveLoggedUser()?retrieveLoggedUser().Id:null);
+                if (loggedUserId){
+                    photos.forEach(photo => {
+                        if (photo.UserId == loggedUserId || photo.Shared)
+                            $('#photoList').append(thumbNail(photo, loggedUserId));
+                    });
+                    $('.editphoto').click(OpenEditphotoDialog);
+                    $('.deletephoto').click(deletephoto);
+                }
+            }
+            function updatephotoList2(photos) {
+                // Rafraichir la liste des photos
+                // paramètre photos: tableau d'objets photo
+                /////////////////////////////////////////
+                var oddRow = true;
+                // effacer le tableau affichant la liste des photos
+                $('#photoList').empty();
+                let loggedUserId = retrieveLoggedUser().Id;
+                // pour tous les photos du tableau photos
+                photos.forEach(photo => { // créer une nouvelle rangée
+
+                    // déterminer la couleur de la rangée
+                    let bgColorRow = "row_" + photo.Id + " cell " + (oddRow?  "oddRow": "evenRow") ;
+                    let favicon = makeFavicon(photo.Url);
+                    let title = favicon + photo.Name;
+                    let link = makeHyperLink(photo.Url, title);
+                    
+                    // Distribution des données de l'photo dans des cellules de la rangée
+                    $('#photoList').append(makeCell(link, bgColorRow + " ellipsis"));
+                    $('#photoList').append(makeCell(photo.Category, bgColorRow + " ellipsis"));
+                    if (connected) {
+                        if (photo.UserId == loggedUserId) {
+                            $('#photoList').append(makeCell("", bgColorRow + " ellipsis"));
+                        } else {
+                            $('#photoList').append(makeCell(photo.Username, bgColorRow + " ellipsis"));
+                        }
+                    } else {
+                        $('#photoList').append(makeCell(photo.Username, bgColorRow + " ellipsis"));
+                    }
+
+                    if (connected && photo.UserId == loggedUserId){
+                        // Bouton d'appel à la modification de l'photo
+                        $('#photoList').append(
+                            makeCell("", bgColorRow).append(
+                                makeButton("editphoto", "edit_" + photo.Id , "Modifier "+ photo.Name).append(
+                                    makeGlyphIcon('pencil'))));
+
+                        // Bouton d'appel au retrait de l'photo
+                        $('#photoList').append(
+                            makeCell("", bgColorRow).append(
+                                makeButton("deletephoto", "delete_" + photo.Id , "Effacer "+ photo.Name).append(
+                                    makeGlyphIcon('remove'))));
+                    } else {
+                        $('#photoList').append(makeCell("", bgColorRow));                        
+                        $('#photoList').append(makeCell("", bgColorRow));
+                    }
+                    oddRow = !oddRow;
+               });
+                // rétablir la couleur de fond de toutes les rangées
+                $('.cell').removeClass('selectedRow');
+
+                // Masquer tous les boutons des rangées d'photo
+                $('#photoList span').hide();
+
+               $('.editphoto').click(OpenEditphotoDialog);
+               $('.deletephoto').click(deletephoto);
+               $('#photoList span').hide();
+               $('.cell').mouseover(cellOver);
+               $('.cell').mouseleave(cellBlur);
+            }
+        </script>
+    </body>
+</html>
