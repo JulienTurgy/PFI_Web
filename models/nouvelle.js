@@ -1,11 +1,12 @@
 module.exports = 
 class Nouvelle{
-    constructor(title, description, username, avatar, GUID)
+    constructor(title, description, username, created, avatar, GUID)
     {
         this.Id = 0;
         this.Title = title !== undefined ? title : "";
         this.Description = description !== undefined ? description : "";
-        this.username = username !== undefined ? username : 0;
+        this.Username = username !== undefined ? username : 0;
+        this.Created = created !== undefined ? created : 0;
         this.Avatar = avatar !== undefined ? avatar : "";
         this.GUID = GUID !== undefined ? GUID : "";
     }
@@ -16,7 +17,8 @@ class Nouvelle{
         validator.addField('Id','integer');
         validator.addField('Title','string');
         validator.addField('Description','string');
-        validator.addField('username', 'string');
+        validator.addField('Username', 'string');
+        validator.addField('Created','integer');
         return validator.test(instance);
     }
 }

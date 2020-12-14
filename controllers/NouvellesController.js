@@ -28,7 +28,8 @@ class nouvellesController extends require('./Controller') {
   
     resolveUserName(nouvelle){
         let users = new Repository('Users');
-        let user = users.get(nouvelle.UserId);
+        //let user = users.get(nouvelle.UserId);
+        let user = users.findByField("Name", nouvelle.Username);
         let username = "unknown";
         if (user !== null)
             username = user.Name;
@@ -41,7 +42,8 @@ class nouvellesController extends require('./Controller') {
         let users = new Repository('Users');
         let nouvellesWithUsername = nouvelles.map(nouvelle => ({...nouvelle}));
         for(let nouvelle of nouvellesWithUsername) {
-            let user = users.get(nouvelle.UserId);
+            //let user = users.get(nouvelle.UserId);
+            let user = users.findByField("Name", nouvelle.Username);
             let username = "unknown";
             if (user !== null)
                 username = user.Name;
