@@ -117,7 +117,7 @@ function webAPI_logout(userId, successCallBack, errorCallBack) {
 }
 function webAPI_HEAD(successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images",
+        url: apiBaseURL + "/api/nouvelles",
         type: 'HEAD',
         contentType:'text/plain',
         complete: function(request) { 
@@ -131,7 +131,7 @@ function webAPI_HEAD(successCallBack, errorCallBack) {
 }
 function webAPI_GET_ALL(queryString, successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images" + queryString,
+        url: apiBaseURL + "/api/nouvelles" + queryString,
         type: 'GET',
         contentType:'text/plain',
         data:{},
@@ -144,7 +144,7 @@ function webAPI_GET_ALL(queryString, successCallBack, errorCallBack) {
 }
 function webAPI_GET( id, successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images" + "/" + id,
+        url: apiBaseURL + "/api/nouvelles" + "/" + id,
         type: 'GET',
         contentType:'text/plain',
         data:{},
@@ -157,7 +157,7 @@ function webAPI_GET( id, successCallBack, errorCallBack) {
 }
 function webAPI_POST( data , successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images",
+        url: apiBaseURL + "/api/nouvelles",
         type: 'POST',
         headers: getBearerAuthorizationToken(),
         contentType:'application/json',
@@ -171,7 +171,7 @@ function webAPI_POST( data , successCallBack, errorCallBack) {
 }
 function webAPI_PUT(data, successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images" + "/" + data.Id,
+        url: apiBaseURL + "/api/nouvelles" + "/" + data.Id,
         type: 'PUT',
         headers: getBearerAuthorizationToken(),
         contentType:'application/json',
@@ -185,7 +185,7 @@ function webAPI_PUT(data, successCallBack, errorCallBack) {
 }
 function webAPI_DELETE( id, successCallBack, errorCallBack) {
     $.ajax({
-        url: apiBaseURL + "/api/images" + "/" + id,
+        url: apiBaseURL + "/api/nouvelles" + "/" + id,
         contentType:'text/plain',
         type: 'DELETE',
         headers: getBearerAuthorizationToken(),

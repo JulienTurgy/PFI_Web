@@ -1,11 +1,12 @@
 const Repository = require('../models/Repository');
-const nouvelle = require('../models/nouvelle');
+const NouvellesRepository = require('../models/nouvellesRepository');
+const Nouvelle = require('../models/nouvelle');
 
 module.exports = 
 class nouvellesController extends require('./Controller') {
     constructor(req, res){
         super(req, res, false /* needAuthorization */);
-        this.nouvellesRepository = new Repository('nouvelles', true /* cached */, this.params);
+        this.nouvellesRepository = new NouvellesRepository(req, this.getQueryStringParams());
     }
     queryStringParamsList(){
         let content = "<div style=font-family:arial>";
@@ -28,8 +29,7 @@ class nouvellesController extends require('./Controller') {
   
     resolveUserName(nouvelle){
         let users = new Repository('Users');
-        //let user = users.get(nouvelle.UserId);
-        let user = users.findByField("Name", nouvelle.Username);
+        let user = users.get(nouvelle.UserId);
         let username = "unknown";
         if (user !== null)
             username = user.Name;
@@ -42,8 +42,7 @@ class nouvellesController extends require('./Controller') {
         let users = new Repository('Users');
         let nouvellesWithUsername = nouvelles.map(nouvelle => ({...nouvelle}));
         for(let nouvelle of nouvellesWithUsername) {
-            //let user = users.get(nouvelle.UserId);
-            let user = users.findByField("Name", nouvelle.Username);
+            let user = users.get(nouvelle.UserId);
             let username = "unknown";
             if (user !== null)
                 username = user.Name;

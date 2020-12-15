@@ -27,7 +27,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
          <!-- photo manager main layout styles -->
-         <link rel="stylesheet" href="css/photosManagerLayout.css">
+         <link rel="stylesheet" href="css/nouvellesManagerLayout.css">
 
         <!-- favicon link: use https://favicon.io/favicon-converter/ to create new favicon -->
         <link rel="icon" href="favicon.ico">
@@ -93,7 +93,7 @@
                 
                 <!---photoS LIST----------------------------------------------------------------->
                 <div class="photo-list-scroll-containter">
-                    <div class="photo-list-container" id="photoList">
+                    <div class="photo-list-container" id="newList">
                         <!-- La liste de photos sera injectée ici par du JavaScript -->
                     </div>
                 </div>
@@ -174,12 +174,12 @@
             let search = "";
             let searchShowed = false;
             let sorted = [{field:"Username", desc:false}, {field:"Title", desc:false}];
-            let forceRefreshphotoList = false;
+            let forceRefreshnewList = false;
             let currentETag = "";
             let previousQueryString = ""; 
             let photoValidationProvider = null;
             let profilValidationProvider = null;
-            let pausephotosListPeriodicRefresh = false;
+            let pausenewsListPeriodicRefresh = false;
 
             function initUI() {
                 initphotoValidation();
@@ -204,14 +204,14 @@
                 $("input[type=search").on("input", updateHead);
 
                 insertWaitingStatus();
-                initphotosListColumnsLayout();
+                initnewsListColumnsLayout();
                 
                 updateHead();
                 updateUI(false);
-                installPeriodicphotosListRefresh();
+                installPeriodicnewsListRefresh();
             }
 
-            function initphotosListColumnsLayout() {
+            function initnewsListColumnsLayout() {
                 createCssClass('.columns-layout',"display: grid; grid-template-columns: 30% 30% 30% 5% 5%;"); 
             }
             function initphotoDialog() {
@@ -248,7 +248,7 @@
                     ]
                 });
                 $('#dialog-photoForm').on('dialogopen', function(event) {
-                    pausephotosListPeriodicRefresh = true;
+                    pausenewsListPeriodicRefresh = true;
                     $('#btn-Savephoto').addClass("btn btn-primary");
                     $('#btn-Cancelphoto').addClass("btn btn-secondary");
                     $('#photoTitle').val("");
@@ -263,7 +263,7 @@
                 $('#dialog-photoForm').on('dialogclose', function(event) {
                     addMode = false;
                     editMode= false;
-                    pausephotosListPeriodicRefresh = false;
+                    pausenewsListPeriodicRefresh = false;
                     resetphotoValidation();
                     $("#btn_OpenAddphotoDialog").show();
                 });
@@ -380,7 +380,7 @@
                         ]
                         });
                 $('#dialog-profilForm').on('dialogopen', function(event) {
-                    pausephotosListPeriodicRefresh = true;
+                    pausenewsListPeriodicRefresh = true;
                     $("#profilId").val(0);
                     $('#btn-SaveProfil').addClass("btn btn-primary");
                     $('#btn-deleteProfil').addClass("btn btn-danger");
@@ -408,18 +408,18 @@
                     $("#btn_OpenAddphotoDialog").hide();
                 });
                 $('#dialog-profilForm').on('dialogclose', function(event) {
-                    pausephotosListPeriodicRefresh = false;
+                    pausenewsListPeriodicRefresh = false;
                     resetProfilValidation();
                     if (connected)
                         $("#btn_OpenAddphotoDialog").show();
                 });
             }
             function OpenProfilDialog() {
-                pausephotosListPeriodicRefresh = true;
+                pausenewsListPeriodicRefresh = true;
                 $("#dialog-profilForm" ).dialog('open');
             }
             function confirmDeleteAccount() {
-                pausephotosListPeriodicRefresh = true;
+                pausenewsListPeriodicRefresh = true;
                 $.confirm({
                     title: 'Retrait de compte',
                     content: '<b>Voulez-vous vraiment effacer votre compte <br>ainsi que toutes vos photos?</b>',
@@ -430,7 +430,7 @@
                                     webAPI_DELETE_Account(retrieveLoggedUser().Id, 
                                         function () {
                                             closeAllDialog();
-                                            pausephotosListPeriodicRefresh = false;
+                                            pausenewsListPeriodicRefresh = false;
                                             forceLogout();
                                         }, 
                                         AlertError);
@@ -451,7 +451,7 @@
                             id : 'btn-OkLogin',
                             text : 'Ok',
                             click : function() {
-                                pausephotosListPeriodicRefresh = false;
+                                pausenewsListPeriodicRefresh = false;
                                 webAPI_login($( "#loginEmail").val(), 
                                                 $("#loginPassword").val(), 
                                                 ()=>{
@@ -471,7 +471,7 @@
                     ]
                     });
                 $('#dialog-loginForm').on('dialogopen', function(event) {
-                    pausephotosListPeriodicRefresh = true;
+                    pausenewsListPeriodicRefresh = true;
                     if (localStorage.getItem('rememberme') == "1") {
                         $("#remember-me").attr("checked","checked");
                         let email = localStorage.getItem('loginemail');
@@ -484,7 +484,7 @@
                     }
                 });
                 $('#dialog-loginForm').on('dialogclose', function(event) {
-                   pausephotosListPeriodicRefresh = false;
+                   pausenewsListPeriodicRefresh = false;
                    if ($('#remember-me').is(":checked")) {
                         localStorage.setItem('rememberme', "1");
                         localStorage.setItem('loginemail', $("#loginEmail").val());
@@ -502,7 +502,7 @@
                     content: 'Voulez-vous vous déconnecter?',
                     buttons: {
                         confirmer: function () {
-                            pausephotosListPeriodicRefresh = false;
+                            pausenewsListPeriodicRefresh = false;
                             webAPI_logout(retrieveLoggedUser().Id, updateUI, AlertError);
                         },
                         annuler: {},
@@ -553,8 +553,8 @@
                 }
             }
             
-            function installPeriodicphotosListRefresh() {
-                setInterval(() => { if (!pausephotosListPeriodicRefresh) getphotos(); }, 15000);
+            function installPeriodicnewsListRefresh() {
+                setInterval(() => { if (!pausenewsListPeriodicRefresh) getphotos(); }, 15000);
             }
 
             function toogleSearchVisibility() {
@@ -637,31 +637,31 @@
                 updateSearch();
             }
             function updateUI(forceRefresh = true){
-                forceRefreshphotoList = forceRefresh;
+                forceRefreshnewList = forceRefresh;
                 updateConnected();
                 getphotos();
-                forceRefreshphotoList = false;
+                forceRefreshnewList = false;
             }
             function getphotos() {
                 console.log(queryString);
-                if (forceRefreshphotoList){
+                if (forceRefreshnewList){
                     webAPI_HEAD(getETag, AlertError);
                 } else
                     webAPI_HEAD(checkETag, AlertError);
             }
             function getETag(ETag){
                 currentETag = ETag;
-                webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                webAPI_GET_ALL(queryString, updateNewsList, AlertError);
                 console.log("Forced Downloading photos");
             }
             function checkETag(ETag){
                 if (ETag != currentETag) {
-                    webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                    webAPI_GET_ALL(queryString, updateNewsList, AlertError);
                     currentETag = ETag;
                     console.log("new ETag Downloading photos");
                 } else {
-                   if (previousQueryString != queryString || forceRefreshphotoList){
-                        webAPI_GET_ALL(queryString, updatephotoList, AlertError);
+                   if (previousQueryString != queryString || forceRefreshnewList){
+                        webAPI_GET_ALL(queryString, updateNewsList, AlertError);
                         previousQueryString = queryString;
                         console.log("new queryString Downloading photos");
                     } else {
@@ -681,9 +681,9 @@
             }
  
             function insertWaitingStatus(){
-                $('#photoList').empty()
-                $('#photoList').append(  makeCell("En attente de réponse du service Web...", "waiting"));
-                $('#photoList').append($('<img src="images/Loading_icon.gif" alt="waiting"/>'));
+                $('#newList').empty()
+                $('#newList').append(  makeCell("En attente de réponse du service Web...", "waiting"));
+                $('#newList').append($('<img src="images/Loading_icon.gif" alt="waiting"/>'));
             }
             function statusToString(status) {
                 let text = "Le server ne répond pas.";
@@ -723,7 +723,7 @@
                             if (status == 401) {
                                 forceLogout();
                             }
-                            pausephotosListPeriodicRefresh = true;
+                            pausenewsListPeriodicRefresh = true;
                         }
                     }
                 });
@@ -848,76 +848,73 @@
                 return thumbnailContainer;
             }
 
-            function updatephotoList(photos){
-                $('#photoList').empty();
+            function updateNewsList(nouvelles){
+                $('#newList').empty();
                 let loggedUserId = (retrieveLoggedUser()?retrieveLoggedUser().Id:null);
                 if (loggedUserId){
-                    photos.forEach(photo => {
-                        if (photo.UserId == loggedUserId || photo.Shared)
-                            $('#photoList').append(thumbNail(photo, loggedUserId));
+                    nouvelles.forEach(nouvelle => {
+                        if (nouvelle.UserId == loggedUserId)
+                            $('#newList').append(thumbNail(nouvelle, loggedUserId));
                     });
                     $('.editphoto').click(OpenEditphotoDialog);
                     $('.deletephoto').click(deletephoto);
                 }
             }
-            
-            function updatephotoList2(photos) {
-                // Rafraichir la liste des photos
-                // paramètre photos: tableau d'objets photo
+            function updateNewsList2(nouvelles) {
+                // Rafraichir la liste des nouvelles
+                // paramètre nouvelles: tableau d'objets nouvelle
                 /////////////////////////////////////////
                 var oddRow = true;
-                // effacer le tableau affichant la liste des photos
-                $('#photoList').empty();
+                // effacer le tableau affichant la liste des nouvelles
+                $('#newList').empty();
                 let loggedUserId = retrieveLoggedUser().Id;
-                // pour tous les photos du tableau photos
-                photos.forEach(photo => { // créer une nouvelle rangée
+                // pour tous les nouvelles du tableau nouvelles
+                nouvelles.forEach(nouvelle => { // créer une nouvelle rangée
 
                     // déterminer la couleur de la rangée
-                    let bgColorRow = "row_" + photo.Id + " cell " + (oddRow?  "oddRow": "evenRow") ;
-                    let favicon = makeFavicon(photo.Url);
-                    let title = favicon + photo.Name;
-                    let link = makeHyperLink(photo.Url, title);
+                    let bgColorRow = "row_" + nouvelle.Id + " cell " + (oddRow?  "oddRow": "evenRow") ;
+                    let title = favicon + nouvelle.Title;
                     
-                    // Distribution des données de l'photo dans des cellules de la rangée
-                    $('#photoList').append(makeCell(link, bgColorRow + " ellipsis"));
-                    $('#photoList').append(makeCell(photo.Category, bgColorRow + " ellipsis"));
+                    // Distribution des données de l'nouvelle dans des cellules de la rangée
+                    $('#newList').append(makeCell(link, bgColorRow + " ellipsis"));
+                    $('#newList').append(makeCell(nouvelle.Category, bgColorRow + " ellipsis"));
                     if (connected) {
-                        if (photo.UserId == loggedUserId) {
-                            $('#photoList').append(makeCell("", bgColorRow + " ellipsis"));
+                        if (nouvelle.UserId == loggedUserId) {
+                            $('#newList').append(makeCell("", bgColorRow + " ellipsis"));
                         } else {
-                            $('#photoList').append(makeCell(photo.Username, bgColorRow + " ellipsis"));
+                            $('#newList').append(makeCell(nouvelle.Username, bgColorRow + " ellipsis"));
                         }
                     } else {
-                        $('#photoList').append(makeCell(photo.Username, bgColorRow + " ellipsis"));
+                        $('#newList').append(makeCell(nouvelle.Username, bgColorRow + " ellipsis"));
                     }
 
-                    if (connected && photo.UserId == loggedUserId){
-                        // Bouton d'appel à la modification de l'photo
-                        $('#photoList').append(
+                    if (connected && nouvelle.UserId == loggedUserId){
+                        // Bouton d'appel à la modification de l'nouvelle
+                        $('#newList').append(
                             makeCell("", bgColorRow).append(
-                                makeButton("editphoto", "edit_" + photo.Id , "Modifier "+ photo.Name).append(
+                                makeButton("editnouvelle", "edit_" + nouvelle.Id , "Modifier "+ nouvelle.Name).append(
                                     makeGlyphIcon('pencil'))));
 
-                        // Bouton d'appel au retrait de l'photo
-                        $('#photoList').append(
+                        // Bouton d'appel au retrait de l'nouvelle
+                        $('#newList').append(
                             makeCell("", bgColorRow).append(
-                                makeButton("deletephoto", "delete_" + photo.Id , "Effacer "+ photo.Name).append(
+                                makeButton("deletenouvelle", "delete_" + nouvelle.Id , "Effacer "+ nouvelle.Name).append(
                                     makeGlyphIcon('remove'))));
                     } else {
-                        $('#photoList').append(makeCell("", bgColorRow));                        
-                        $('#photoList').append(makeCell("", bgColorRow));
+                        $('#newList').append(makeCell("", bgColorRow));                        
+                        $('#newList').append(makeCell("", bgColorRow));
                     }
                     oddRow = !oddRow;
                });
                 // rétablir la couleur de fond de toutes les rangées
                 $('.cell').removeClass('selectedRow');
 
-                // Masquer tous les boutons des rangées d'photo
-                $('#photoList span').hide();
+                // Masquer tous les boutons des rangées d'nouvelle
+                $('#newList span').hide();
 
-               $('.editphoto').click(OpenEditphotoDialog);
-               $('.deletephoto').click(deletephoto);
-               $('#photoList span').hide();
+               $('.editnouvelle').click(OpenEditnouvelleDialog);
+               $('.deletenouvelle').click(deletenouvelle);
+               $('#newList span').hide();
                $('.cell').mouseover(cellOver);
                $('.cell').mouseleave(cellBlur);
             }
