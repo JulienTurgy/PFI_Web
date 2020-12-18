@@ -34,11 +34,11 @@ class ImageFilesRepository{
             }
         }
     }
+
     static storeImageData(previousGUID, imageDataBase64) {
-        if (imageDataBase64) {
-            let formatSpecifier = "data:image/png;base64,";
-            imageDataBase64 = imageDataBase64.replace(formatSpecifier,'');
-           
+        if(imageDataBase64){
+            imageDataBase64 = imageDataBase64.slice(22);
+        
             const resizeImg = require('resize-img');
             const thumbnailSize = 256;
             const { v1: uuidv1 } = require('uuid');
@@ -78,7 +78,8 @@ class ImageFilesRepository{
                 fs.unlinkSync(tempFile);
             })();
             return GUID;
-        } else
-        return previousGUID;
+        } 
+        else
+            return previousGUID;
     }
 }

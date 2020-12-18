@@ -76,7 +76,7 @@
                         <div id="showSearch" tooltip="Barre de recherche"  tooltip-position="left">
                             <span id="showSearchIcon" class="gicon glyphicon glyphicon-zoom-in" ></span>
                         </div>
-                        <div id="btn_OpenAddphotoDialog" tooltip="Ajouter une photo" tooltip-position="left">
+                        <div id="btn_OpenAddphotoDialog" tooltip="Ajouter une nouvelle" tooltip-position="left">
                             <span class="gicon glyphicon glyphicon-plus"></span>
                         </div>
                     </div>
@@ -85,36 +85,31 @@
                 <!---SEARCH BAR--------------------------------------------------------------------->
                 <div class="searchBar columns-layout">
                     <div><input type="search" placeholder="Titre..." id="search_title"></div>
-                    <div><input type="search" placeholder="Date..." id="search_created"></div>
                     <div><input type="search" placeholder="Usager..." id="search_user"></div>
                     <div></div>
                     <div></div>
                 </div>
                 
-                <!---photoS LIST----------------------------------------------------------------->
+                <!---NOUVELLES LIST----------------------------------------------------------------->
                 <div class="photo-list-scroll-containter">
                     <div class="photo-list-container" id="newList">
-                        <!-- La liste de photos sera injectée ici par du JavaScript -->
+                        <!-- La liste de nouvelles sera injectée ici par du JavaScript -->
                     </div>
                 </div>
             </div>
         </div>
         
-        <!---PHOTO DIALOG------------------------------------------------------------------------>
+        <!---ADD NOUVELLE DIALOG------------------------------------------------------------------------>
         <div id="dialog-photoForm" title="photo" class="dialog">
             <form id="photoForm" class="form-group">
-                    <input type="hidden" id="photoId" />
-                    <input type="hidden" id="photoUserId" />
+                    <input type="hidden" id="nouvelleId" />
+                    <input type="hidden" id="nouvelleUserId" />
                     <input type="hidden" id="photoGUID" />
-                    <input type="hidden" id="photoCreated" />
-                    <input type="text" id="photoTitle" placeholder="Titre" class="form-control"/>
-                    <input type="text" id="photoDescription" placeholder="Description"  class="form-control"/>
-                    <table ><tr>
-                        <td style="padding:4px;"><label for="photoShared">Partagée</label></td>
-                        <td style="padding:4px;"><input type="checkbox" id="photoShared" name="photoShared"/></td>
-                    </tr></table>
+                    <input type="hidden" id="nouvelleCreated"/>
+                    <input type="text" id="nouvelleTitle" placeholder="Titre" class="form-control"/>
+                    <textarea id="nouvelleDescription" placeholder="Description"  class="form-control" rows="8"></textarea>
                     <div style="vertical-align:top; text-align: center ">
-                        <div class='imageDownloader' id = 'photo' defautImageSrc='images/No_image.png'></div>
+                        <div class='imageDownloader' id = 'image' defautImageSrc='images/No_image.png'></div>
                         <label>(cliquez pour la changer l'image)</label>
                     </div>
             </form>
@@ -226,12 +221,12 @@
                             click : function() {
                                     // Ajout d'un photo
                                     if (addMode) {
-                                        let photo = makephotoFromphotoForm(false);
+                                        let photo = makeNouvelleFromNouvelleForm(false);
                                         if (photoValidationProvider.isValid()) {
                                             webAPI_POST(photo, ()=>{ getphotos(); $("#dialog-photoForm").dialog( "close" ); }, AlertError);
                                         }
                                     } else {
-                                        let photo = makephotoFromphotoForm(true);
+                                        let photo = makeNouvelleFromNouvelleForm(true);
                                         if (photoValidationProvider.isValid()) {
                                             webAPI_PUT(photo, ()=>{ getphotos(); $("#dialog-photoForm").dialog( "close" ); }, AlertError);
                                         }
@@ -251,13 +246,12 @@
                     pausenewsListPeriodicRefresh = true;
                     $('#btn-Savephoto').addClass("btn btn-primary");
                     $('#btn-Cancelphoto').addClass("btn btn-secondary");
-                    $('#photoTitle').val("");
-                    $('#photoDescription').val(""); // todo set UserId field
-                    clearImageData('photo');
-                    $("#photoShared").prop("checked",true);
+                    $('#nouvelleTitle').val("");
+                    $('#nouvelleDescription').val(""); // todo set UserId field
+                    clearImageData('image');
                     /// Tres important si on veut que la photo par defaut soit affichée dans le dialogue
-                    setImageDownloaderBlankImage('photo');
-                    $("#photoUserId").val(retrieveLoggedUser().Id);
+                    setImageDownloaderBlankImage('image');
+                    $("#nouvelleUserId").val(retrieveLoggedUser().Id);
                     $("#btn_OpenAddphotoDialog").hide();
                 });
                 $('#dialog-photoForm').on('dialogclose', function(event) {
@@ -277,53 +271,50 @@
                 editMode = true;
                 $('#dialog-photoForm').dialog('option', 'title', 'Modification de photo');
                 $("#dialog-photoForm").dialog( 'open' );
-                let photoId = e.currentTarget.id.split('_')[1];
-                webAPI_GET(photoId, fillEditphotoForm, AlertError);
+                let nouvelleId = e.currentTarget.id.split('_')[1];
+                webAPI_GET(nouvelleId, fillEditNouvellesForm, AlertError);
             }
-            function fillEditphotoForm(photo) {
-                $('#photoId').val(photo.Id); 
-                $('#photoUserId').val(photo.UserId);
-                $('#photoGUID').val(photo.GUID);
-                $('#photoTitle').val(photo.Title);
-                $('#photoCreated').val(photo.Created);
-                $('#photoDescription').val(photo.Description);
-                $("#photoShared").prop("checked", photo.Shared);
+            function fillEditNouvellesForm(nouvelle) {
+                $('#nouvelleId').val(nouvelle.Id); 
+                $('#nouvelleUserId').val(nouvelle.UserId);
+                $('#photoGUID').val(nouvelle.GUID);
+                $('#nouvelleTitle').val(nouvelle.Title);
+                $('#nouvelleCreated').val(nouvelle.Created);
+                $('#nouvelleDescription').val(nouvelle.Description);
                 clearImageData('photo');
-                if (photo.OriginalURL != "")
+                if (nouvelle.OriginalURL != "")
                 /// Tres important si on veut que la photo soit affichée dans le dialogue
-                    setImageDownloaderImage('photo', photo.OriginalURL);
+                    setImageDownloaderImage('image', nouvelle.OriginalURL);
                 else
-                    setImageDownloaderBlankImage('photo');
+                    setImageDownloaderBlankImage('image');
                 //<div class='imageDownloader' id = 'photo' defautImageSrc='images/No_image.png'></div>
             }
             
-            function makephotoFromphotoForm(includeId = false) {
+            function makeNouvelleFromNouvelleForm(includeId = false) {
                 if (includeId) {
                     // Récupération du Id du photo dans le contrôle caché
-                    return {Id: parseInt($('#photoId').val()), 
-                            Title: $('#photoTitle').val(), 
-                            Description: $('#photoDescription').val(), 
-                            Shared: $("#photoShared").prop("checked"),
-                            Created: $('#photoCreated').val(), 
+                    return {Id: parseInt($('#nouvelleId').val()), 
+                            Title: $('#nouvelleTitle').val(), 
+                            Description: $('#nouvelleDescription').val(), 
+                            Created: $('#nouvelleCreated').val(), 
                             GUID: $('#photoGUID').val(),
-                            UserId: parseInt($('#photoUserId').val()),
-                            ImageData : getImageData('photo')
+                            UserId: parseInt($('#nouvelleUserId').val()),
+                            ImageData : getImageData('image')
                         };
                 }
                 return {    Id: 0, 
-                            Title: $('#photoTitle').val(), 
-                            Description: $('#photoDescription').val(), 
-                            Shared: $("#photoShared").prop("checked"),
-                            Created: $('#photoCreated').val(), 
+                            Title: $('#nouvelleTitle').val(), 
+                            Description: $('#nouvelleDescription').val(), 
+                            Created: 0,
                             GUID: $('#photoGUID').val(),
-                            UserId: parseInt($('#photoUserId').val()),
-                            ImageData : getImageData('photo')
+                            UserId: parseInt($('#nouvelleUserId').val()),
+                            ImageData : getImageData('image')
                         };
             }
             function deletephoto(e) {
                 // Extraction du Id du photo inscrit dans l'attribut id de l'élément déclencheur de l'événement click
-                let photoId = parseInt(e.currentTarget.id.split('_')[1]);
-                webAPI_GET(photoId, confirmDeletephoto, AlertError);
+                let nouvelleId = parseInt(e.currentTarget.id.split('_')[1]);
+                webAPI_GET(nouvelleId, confirmDeletephoto, AlertError);
             }
             function confirmDeletephoto(photo) {
                 $.confirm({
@@ -602,7 +593,6 @@
             function updateSearch(){ 
                 search = "";
                 addSearchKey("title", $("#search_title").val());                
-                addSearchKey("created", $("#search_created").val());
                 addSearchKey("username", $("#search_user").val());
                 
                 if (search != "") {
@@ -731,20 +721,20 @@
 
             function initphotoValidation() {
                 photoValidationProvider = new ValidationProvider("photoForm");
-                photoValidationProvider.addControl("photoTitle", validate_photoTitle, false /*validateOnLeave*/);
-                photoValidationProvider.addControl("photoDescription", validate_photoDescription, false /*validateOnLeave*/);
+                photoValidationProvider.addControl("nouvelleTitle", validate_nouvelleTitle, false /*validateOnLeave*/);
+                photoValidationProvider.addControl("nouvelleDescription", validate_photoDescription, false /*validateOnLeave*/);
             }
             function resetphotoValidation() {
                 photoValidationProvider.reset();
             }
-            function validate_photoTitle(){
-                let TBX_Title = document.getElementById("photoTitle");
+            function validate_nouvelleTitle(){
+                let TBX_Title = document.getElementById("nouvelleTitle");
                 if (TBX_Title.value === "")
                     return "Titre manquant";
                 return "";
             }
             function validate_photoDescription(){
-                let TBX_Description = document.getElementById("photoDescription");
+                let TBX_Description = document.getElementById("nouvelleDescription");
                 if (TBX_Description.value === "")
                     return "Description manquante";
                 return "";
@@ -791,19 +781,19 @@
             function cellOver(e){
                 if (!addMode && !editMode) {
                     // currentTarget.className contient en principe : 'row_x cell ...'
-                    let photoId = e.currentTarget.className.split(' ')[0].split('_')[1];
-                    $('#edit_' + photoId).show();
-                    $('#delete_' + photoId).show();
-                    $('.row_'+photoId).addClass('selectedRow');
+                    let nouvelleId = e.currentTarget.className.split(' ')[0].split('_')[1];
+                    $('#edit_' + nouvelleId).show();
+                    $('#delete_' + nouvelleId).show();
+                    $('.row_'+nouvelleId).addClass('selectedRow');
                 }
             }
             function cellBlur(e){
                 if (!editMode) {
                     // currentTarget.className contient en principe : 'row_x cell ...'
-                    let photoId = e.currentTarget.className.split(' ')[0].split('_')[1];
-                    $('#edit_' + photoId).hide();
-                    $('#delete_' + photoId).hide();
-                    $('.row_'+photoId).removeClass('selectedRow');
+                    let nouvelleId = e.currentTarget.className.split(' ')[0].split('_')[1];
+                    $('#edit_' + nouvelleId).hide();
+                    $('#delete_' + nouvelleId).hide();
+                    $('.row_'+nouvelleId).removeClass('selectedRow');
                 }
             }
             function makeCell(content, cssClass){

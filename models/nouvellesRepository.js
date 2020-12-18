@@ -1,7 +1,8 @@
 const Repository = require('./Repository');
 const ImageFilesRepository = require('./ImageFilesRepository.js');
 const Nouvelle = require('./nouvelle.js');
-const utilities = require("../utilities");
+const utilities = require('../utilities.js');
+
 module.exports = 
 class nouvellesRepository extends Repository {
     constructor(req, params){
@@ -9,6 +10,7 @@ class nouvellesRepository extends Repository {
         this.users = new Repository('Users');
         this.req = req;
         this.params = params;
+        this.setBindExtraDataMethod(this.bindUsernameAndnouvelleURL)
     }
     bindUsernameAndnouvelleURL(nouvelle){
         if (nouvelle) {
@@ -51,9 +53,13 @@ class nouvellesRepository extends Repository {
     add(nouvelle) {
         nouvelle["Created"] = utilities.nowInSeconds();
         if (Nouvelle.valid(nouvelle)) {
-            nouvelle["GUID"] = ImageFilesRepository.storeImageData("", nouvelle["nouvelleData"]);
-            delete nouvelle["nouvelleData"];
-            return super.add(nouvelle);
+            if(utilities.checkImageExtension(nouvelle["ImageData"])) {
+                nouvelle["GUID"] = ImageFilesRepository.storeImageData("", nouvelle["ImageData"]);
+                delete nouvelle["ImageData"];
+                return super.add(nouvelle);
+            }
+            else
+                return null;
         }
         return null;
     }
@@ -62,12 +68,16 @@ class nouvellesRepository extends Repository {
         if (Nouvelle.valid(nouvelle)) {
             let foundnouvelle = super.get(nouvelle.Id);
             if (foundnouvelle != null) {
-                nouvelle["GUID"] = ImageFilesRepository.storeImageData(nouvelle["GUID"], nouvelle["nouvelleData"]);
-                delete nouvelle["nouvelleData"];
-                return super.update(nouvelle);
+                if(utilities.checkImageExtension(nouvelle["ImageData"])) {
+                    nouvelle["GUID"] = ImageFilesRepository.storeImageData(nouvelle["GUID"], nouvelle["ImageData"]);
+                    delete nouvelle["ImageData"];
+                    return super.update(nouvelle);
+                } 
+                else
+                    return null;
             }
         }
-        return false;
+        return null;
     }
     remove(id){
         let foundnouvelle = super.get(id);
@@ -75,6 +85,6 @@ class nouvellesRepository extends Repository {
             ImageFilesRepository.removeImageFile(foundnouvelle["GUID"]);
             return super.remove(id);
         }
-        return false;
+        return null;
     }
 }

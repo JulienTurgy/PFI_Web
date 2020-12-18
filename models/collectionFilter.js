@@ -52,7 +52,7 @@ class collectionFilter{
         this.searchKeys.push({name: name, value: value});
     }
     valueMatch(value, searchValue){
-        return new RegExp('^' + searchValue.toLowerCase().replace(/\*/g, '.*') + '$').test(value.toLowerCase());
+        return new RegExp('^' + searchValue.toLowerCase().replace(/\*/g, '.*') + '$').test(value.toString().toLowerCase());
     }
     itemMatch(item){
         for(let key of this.searchKeys) {

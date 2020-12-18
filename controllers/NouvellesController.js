@@ -26,7 +26,7 @@ class nouvellesController extends require('./Controller') {
         this.res.writeHead(200, {'content-type':'text/html'});
         this.res.end(this.queryStringParamsList());
     }
-  
+
     resolveUserName(nouvelle){
         let users = new Repository('Users');
         let user = users.get(nouvelle.UserId);
@@ -77,32 +77,32 @@ class nouvellesController extends require('./Controller') {
             }
         }
     }
-    // POST: api/nouvelles body payload[{"Id": ..., "Name": "...", "Url": "...", "Category": "...", "UserId": ...}]
+    // POST: api/nouvelles body payload[{"Id": ..., "Title": "...", "Url": "...", "Category": "...", "UserId": ...}]
     post(nouvelle){  
         if (this.requestActionAuthorized()) {
             // validate nouvelle before insertion
-            if (nouvelle.valid(nouvelle)) {
+            if (Nouvelle.valid(nouvelle)) {
                 // avoid duplicate names
-                if (this.nouvellesRepository.findByField('Name', nouvelle.Name) !== null){
+                if (this.nouvellesRepository.findByField('Title', nouvelle.Title) !== null){
                     this.response.conflict();
                 } else {
                     let newnouvelle = this.nouvellesRepository.add(nouvelle);
                     if (newnouvelle)
                         this.response.created(newnouvelle);
                     else
-                        this.response.internalError();
+                        this.response.unprocessable();
                 }
             } else 
                 this.response.unprocessable();
         } else 
             this.response.unAuthorized();
     }
-    // PUT: api/nouvelles body payload[{"Id":..., "Name": "...", "Url": "...", "Category": "...", "UserId": ..}]
+    // PUT: api/nouvelles body payload[{"Id":..., "Title": "...", "Url": "...", "Category": "...", "UserId": ..}]
     put(nouvelle){
         if (this.requestActionAuthorized()) {
             // validate nouvelle before updating
-            if (nouvelle.valid(nouvelle)) {
-                let foundnouvelle = this.nouvellesRepository.findByField('Name', nouvelle.Name);
+            if (Nouvelle.valid(nouvelle)) {
+                let foundnouvelle = this.nouvellesRepository.findByField('Title', nouvelle.Title);
                 if (foundnouvelle != null){
                     if (foundnouvelle.Id != nouvelle.Id) {
                         this.response.conflict();

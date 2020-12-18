@@ -1,4 +1,5 @@
 const queryStringParser = require('query-string');
+
 exports.capitalizeFirstLetter = (s) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1);   
@@ -9,10 +10,33 @@ exports.nowInSeconds = () => {
     return Math.round(now.getTime() / 1000);
 }
 
+exports.dateToSeconds = (dateString) => {
+    var dateParts = dateString.split("/");
+    for(part of dateParts){
+        if(isNaN(parseInt(part)))
+            return 0;
+    }
+    let newDate = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
+    console.log(newDate);
+    return newDate;
+}
+
 exports.deleteByIndex = (array, indexToDelete) => {
     for(let i = indexToDelete.length - 1; i >= 0; i--) {
         array.splice(indexToDelete[i], 1);
     }
+}
+
+exports.checkImageExtension = (imageDataBase64) => {
+    if (imageDataBase64) {
+        let ext = imageDataBase64.slice(11, 14);
+        if(ext == "png" || ext == "jpg" || ext == "jpe") //jpe if image is in jpeg
+            return true
+        else
+            return false;
+    }
+    else
+        return false;
 }
 
 exports.removeQueryString = removeQueryString;
