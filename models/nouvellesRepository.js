@@ -68,7 +68,9 @@ class nouvellesRepository extends Repository {
         if (Nouvelle.valid(nouvelle)) {
             let foundnouvelle = super.get(nouvelle.Id);
             if (foundnouvelle != null) {
-                if(utilities.checkImageExtension(nouvelle["ImageData"])) {
+                if (nouvelle["ImageData"] == '')
+                    return super.update(nouvelle);
+                else if(utilities.checkImageExtension(nouvelle["ImageData"])) {
                     nouvelle["GUID"] = ImageFilesRepository.storeImageData(nouvelle["GUID"], nouvelle["ImageData"]);
                     delete nouvelle["ImageData"];
                     return super.update(nouvelle);

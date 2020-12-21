@@ -85,8 +85,8 @@
                 <!---SEARCH BAR--------------------------------------------------------------------->
                 <div class="searchBar columns-layout">
                     <div><input type="search" placeholder="Titre..." id="search_title"></div>
-                    <div><input type="search" placeholder="Usager..." id="search_user"></div>
                     <div></div>
+                    <div><input type="search" placeholder="Usager..." id="search_user"></div>
                     <div></div>
                 </div>
                 
@@ -110,7 +110,7 @@
                     <textarea id="nouvelleDescription" placeholder="Description"  class="form-control" rows="8"></textarea>
                     <div style="vertical-align:top; text-align: center ">
                         <div class='imageDownloader' id = 'image' defautImageSrc='images/No_image.png'></div>
-                        <label>(cliquez pour la changer l'image)</label>
+                        <label>(cliquez pour changer l'image)</label>
                     </div>
             </form>
         </div>
@@ -202,7 +202,7 @@
                 initnewsListColumnsLayout();
                 
                 updateHead();
-                updateUI(false);
+                //updateUI(false);
                 installPeriodicnewsListRefresh();
             }
 
@@ -222,6 +222,7 @@
                                     // Ajout d'un photo
                                     if (addMode) {
                                         let photo = makeNouvelleFromNouvelleForm(false);
+                                        console.log(photo);
                                         if (photoValidationProvider.isValid()) {
                                             webAPI_POST(photo, ()=>{ getphotos(); $("#dialog-photoForm").dialog( "close" ); }, AlertError);
                                         }
@@ -275,13 +276,13 @@
                 webAPI_GET(nouvelleId, fillEditNouvellesForm, AlertError);
             }
             function fillEditNouvellesForm(nouvelle) {
-                $('#nouvelleId').val(nouvelle.Id); 
+                $('#nouvelleId').val(nouvelle.Id);
                 $('#nouvelleUserId').val(nouvelle.UserId);
                 $('#photoGUID').val(nouvelle.GUID);
                 $('#nouvelleTitle').val(nouvelle.Title);
                 $('#nouvelleCreated').val(nouvelle.Created);
                 $('#nouvelleDescription').val(nouvelle.Description);
-                clearImageData('photo');
+                clearImageData('image');
                 if (nouvelle.OriginalURL != "")
                 /// Tres important si on veut que la photo soit affichée dans le dialogue
                     setImageDownloaderImage('image', nouvelle.OriginalURL);
@@ -627,6 +628,7 @@
                 updateSearch();
             }
             function updateUI(forceRefresh = true){
+                console.log("------- UI update ---------");
                 forceRefreshnewList = forceRefresh;
                 updateConnected();
                 getphotos();
@@ -856,13 +858,14 @@
                             webAPI_getUserInfoById(nouvelle.UserId, data=>{user =
                                 $('#newList').append(owner(nouvelle, data));
                                 $('#newList').append(thumbNail(nouvelle, loggedUserId));
+                                $('.editphoto').click(OpenEditphotoDialog);
+                                $('.deletephoto').click(deletephoto);
                             });
                     });
-                    $('.editphoto').click(OpenEditphotoDialog);
-                    $('.deletephoto').click(deletephoto);
                 }
             }
             function updateNewsList2(nouvelles) {
+                console.log("------------------ 2 ----------------------");
                 // Rafraichir la liste des nouvelles
                 // paramètre nouvelles: tableau d'objets nouvelle
                 /////////////////////////////////////////
