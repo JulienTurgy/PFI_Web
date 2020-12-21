@@ -819,32 +819,44 @@
             function html_fittedImage(url, css=''){
                 return " <div class='"+css+"' style='background:url("+url+") no-repeat center; background-size: cover; margin-right:5px;'></div>";
             }
+            function owner(photo, data){
+                let ownerContainer = $("<div class='ownerContainer'></div>");
+                let ownerHeader = $("<div class='ownerHeader ellipsis'></div>");
+                ownerHeader.append(html_fittedImage(data.AvatarURL,'avatar'));
+                ownerHeader.append($("<br><span style='font-size:14px;color:green'>" + photo.Username + "</span>"));
+                ownerHeader.append($("<br><span style='font-size:14px;color:lightblue'>" + new Date(photo.Created * 1000) + "</span>"));
+
+                ownerContainer.append(ownerHeader);
+                return ownerContainer;
+            }
             function thumbNail(photo, loggedUserId){
-       
                 let thumbnailContainer = $("<div class='thumbnailContainer'></div>");
                 let thumbnailHeader = $("<div class='thumbnailHeader ellipsis'></div>");
+
+                thumbnailHeader.append($("<br><span>" + photo.Title + "</span>"));
                 if (connected && photo.UserId == loggedUserId){
                     // Bouton d'appel à la modification de la photo
                     thumbnailHeader.append(makeButton("editphoto", "edit_" + photo.Id , "Modifier "+ photo.Title).append(makeGlyphIcon('pencil')));
                     // Bouton d'appel au retrait de photo
                     thumbnailHeader.append(makeButton("deletephoto", "delete_" + photo.Id , "Effacer "+ photo.Title).append(makeGlyphIcon('remove')));
-                } 
-
-                thumbnailHeader.append($("<br><span>" + photo.Title + "</span>"));
-                thumbnailHeader.append($("<br><span style='font-size:14px;color:green'>" + photo.Username + "</span>"));
-                thumbnailHeader.append($("<br><span style='font-size:14px;color:lightblue'>" + new Date(photo.Created * 1000) + "</span>"));
+                }
                 thumbnailContainer.append(thumbnailHeader);
                 thumbnailContainer.append(html_fittedImage(photo.ThumbnailURL, "thumbnail"));
+                thumbnailContainer.append($("<br><span>" + photo.Description + "</span>"));
                 return thumbnailContainer;
             }
 
             function updateNewsList(nouvelles){
                 $('#newList').empty();
+                console.log("empty");
                 let loggedUserId = (retrieveLoggedUser()?retrieveLoggedUser().Id:null);
+                let user = {};
                 if (loggedUserId){
                     nouvelles.forEach(nouvelle => {
-                        if (nouvelle.UserId == loggedUserId)
-                            $('#newList').append(thumbNail(nouvelle, loggedUserId));
+                            webAPI_getUserInfoById(nouvelle.UserId, data=>{user =
+                                $('#newList').append(owner(nouvelle, data));
+                                $('#newList').append(thumbNail(nouvelle, loggedUserId));
+                            });
                     });
                     $('.editphoto').click(OpenEditphotoDialog);
                     $('.deletephoto').click(deletephoto);
